@@ -8,3 +8,7 @@ package-lock.json
 
 # Blade
 cache/
+
+# Tests
+test_files/
+public/
