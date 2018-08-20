@@ -13,23 +13,60 @@ class BackupTest extends TestCase
         'driver' => 'mysql',
         'database' => [
           'host' => [
-            'name' => 'localhost'
+            'name' => 'localhost',
+            "port" => 3307
           ],
-          'name' => 'dev_incoviba',
+          'name' => 'test',
           'user' => [
-            'name' => 'incoviba_test',
+            'name' => 'test',
             'password' => 'test'
           ]
         ]
       ],
       'output' => [
-        [
-          'type' => 'yaml',
-          'name' => 'incoviba'
+        "files" => [
+          "path" => "test_files",
+          "name" => "test",
+          "types" => [
+            "yaml",
+            "json",
+            "xml",
+            "sql"
+          ]
         ]
+      ],
+      "backup" => [
+        "location" => "source"
       ]
     ];
+    $this->addTestData();
     $this->backup = new Backup($this->configuration);
+  }
+  protected function addTestData()
+  {
+    $dsn = 'mysql:host=localhost;port=' . $this->configuration['source']['database']['host']['port'] . ';dbname=test';
+    $pdo = new PDO($dsn, $this->configuration['source']['database']['user']['name'], $this->configuration['source']['database']['user']['password']);
+    $query = "CREATE TABLE IF NOT EXISTS test (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, value VARCHAR(50) NULL DEFAULT 'test')";
+    $pdo->query($query);
+    $query = "INSERT INTO test (value) VALUES ('test'), ('test2')";
+    $pdo->query($query);
+  }
+  public function tearDown()
+  {
+    $dsn = 'mysql:host=localhost;port=' . $this->configuration['source']['database']['host']['port'] . ';dbname=test';
+    $pdo = new PDO($dsn, $this->configuration['source']['database']['user']['name'], $this->configuration['source']['database']['user']['password']);
+    $query = "DROP TABLE test";
+    $pdo->query($query);
+  }
+
+  public function testExtract()
+  {
+    $response = $this->backup->extract();
+    $this->assertNull($response);
+  }
+  public function testSave()
+  {
+    $this->backupSave();
   }
   protected function backupSave()
   {
@@ -37,28 +74,4 @@ class BackupTest extends TestCase
     $response = $this->backup->save();
     $this->assertNull($response);
   }
-  public function testExtract()
-  {
-    $response = $this->backup->extract();
-    $this->assertNull($response);
-  }
-  public function testYAMLRun()
-  {
-    $this->backupSave();
-  }
-  /*public function testJSONRun()
-  {
-    $this->backup->changeConfig('output.type', 'json');
-    $this->backupSave();
-  }
-  public function testXMLRun()
-  {
-  $this->backup->changeConfig('output.type', 'xml');
-  $this->backupSave();
-  }
-  public function testSQLRun()
-  {
-  $this->backup->changeConfig('output.type', 'sql');
-  $this->backupSave();
-  }*/
 }

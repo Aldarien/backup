@@ -45,9 +45,18 @@ Get the latest version with `composer aldarien/backup`
     ]
   ],
   "output" => [
+    "[files]" => [
+      "[path]" => "<files path">
+      "name" => "<filename>",
+      "types" => [
+        "<file type1>",
+        "<file type2>"
+      ]
+    ],
     [
       "type" => "<file type>",
-      "name" => "<filename>"
+      "name" => "<filename>",
+      "[path]" => "<file path>"
     ],
     [
       "type" => "<file type>",
@@ -58,9 +67,8 @@ Get the latest version with `composer aldarien/backup`
     "location" => "source|file",
     "[file]" => "<filename>"
     "frecuency" => [
-      "[hours]" => h,
-      "[days]" => d,
-      "[months]" => m
+      "value" => <n>,
+      "unit" => "hours|days|months"
     ]
   ]
 ];
@@ -68,20 +76,29 @@ Get the latest version with `composer aldarien/backup`
 
 + `backup` The app settings.
   + `location` Where the last backup is registered.
-  + `file` If the location is a file, the file setting holds where the file is located. It needs to be writable by the app.
-  + `frecuency` How often is the backup made. It can be in months, days or hours.
+  + `file` **Optional**. If the location is a file, the file setting holds where the file is located. It needs to be writable by the app.
+  + `frecuency` How often is the backup made.
+    + `value` The value of how often to do a backup.
+    + `unit` The unit of frecuency. Can be *`hours`*, *`days`* or *`months`*.
+
 
 + `source` The source database information.
-  + `driver` The type of database. Currently only `mysql` is supported.
+  + `driver` The type of database. Currently only *`mysql`* is supported.
   + `database` The database information.
     + `host`
       + `name` The host name.
-      + `port` optional port different than the default setting.
+      + `port` **Optional**. The port when it is different than the default settings.
     + `name` The database name.
     + `user` The user information.
       + `name` The user's name.
       + `password` The user's password.
 
+
 + `output` Multiple outputs can be specified. Foreach one the same settings are needed.
-  + `type` The file type. Can be `yaml`, `json`, `xml` and `sql`.
+  + `files` **Optional**. If this is set, then all other output items are ignored. It serves as a summary with all the files named the same and saved in the same place.
+    + `path` **Optional**. Where the files are saved.
+    + `name` Filename for the different types.
+    + `types` Array with all the file types.
+  + `type` The file type. Can be *`yaml`*, *`json`*, *`xml`* and *`sql`*.
   + `name` The filename without the extension.
+  + `path` **Optional**. The location of the saved file.

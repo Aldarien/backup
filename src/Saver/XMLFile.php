@@ -8,7 +8,7 @@ class XMLFile extends Saver
     parent::__construct();
     $this->extension = 'xml';
   }
-  protected function build()
+  public function build()
   {
     $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><sql></sql>');
     foreach ($this->data as $data) {

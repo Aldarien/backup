@@ -19,14 +19,7 @@ class Backup
       throw new \Exception('Missing filename for backup.location.');
     }
     if ($this->configuration['backup']['location'] == 'source') {
-      switch ($this->configuration['source']['driver']) {
-        case 'mysql':
-          $extractor = new \Backup\Extractor\MySQLExtractor($this->configuration['source']['database']);
-          break;
-        default:
-          throw new \Exception('No known driver for source defined in configuration.');
-          return;
-      }
+      $extractor = $this->getExtractor();
       $extractor->createBackup();
     }
   }
@@ -49,14 +42,7 @@ class Backup
   }
   protected function checkSource()
   {
-    switch ($this->configuration['source']['driver']) {
-      case 'mysql':
-        $extractor = new \Backup\Extractor\MySQLExtractor($this->configuration['source']['database']);
-        break;
-      default:
-        throw new \Exception('No known driver for source defined in configuration.');
-        return;
-    }
+    $extractor = $this->getExtractor();
     return $extractor->checkLast();
   }
   protected function checkFrecuency($last)
@@ -66,19 +52,24 @@ class Backup
   }
   public function extract()
   {
+    $extractor = $this->getExtractor();
+    $this->data = $extractor->extract()->getData();
+    $this->saveLast();
+  }
+  protected function getExtractor()
+  {
     switch ($this->configuration['source']['driver']) {
       case 'mysql':
-        $extractor = new \Backup\Extractor\MySQLExtractor($this->configuration['source']['database']);
+        return new \Backup\Extractor\MySQLExtractor($this->configuration['source']['database']);
         break;
       default:
         throw new \Exception('No known driver for source defined in configuration.');
         return;
     }
-    $this->data = $extractor->extract()->getData();
-    $this->saveLast();
   }
   protected function saveLast()
   {
+    $extractor = $this->getExtractor();
     $date = Carbon::now(config('app.timezone'));
     switch ($this->configuration['backup']['location']) {
       case 'source':
@@ -92,10 +83,29 @@ class Backup
   public function save()
   {
     $factory = new SaverFactory();
+    if (isset($this->configuration['output']['files'])) {
+      $cfg = $this->configuration['output']['files'];
+      $filename = $cfg['name'];
+      if (isset($cfg['path'])) {
+        $filename = $cfg['path'] . \DIRECTORY_SEPARATOR . $filename;
+      }
+      foreach ($cfg['types'] as $type) {
+        $output = $factory->create($type);
+        $output->load($this->data);
+        $output->setFilename($filename);
+        $output->build();
+        $output->save();
+      }
+      return;
+    }
     foreach ($this->configuration['output'] as $save) {
       $output = $factory->create($save['type']);
       $output->load($this->data);
-      $output->setFilename($save['name']);
+      $filename = $save['name'];
+      if (isset($save['path'])) {
+        $filename = $save['path'] . \DIRECTORY_SEPARATOR . $filename;
+      }
+      $output->setFilename($filename);
       $output->build();
       $output->save();
     }
