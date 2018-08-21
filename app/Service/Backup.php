@@ -47,7 +47,7 @@ class Backup
   }
   protected function checkFrecuency($last)
   {
-    $last = Carbon::parse($last, config('app.timezone'));
+    $last = Carbon::parse($last, $this->configuration['backup']['timezone']);
     return false;
   }
   public function extract()
@@ -70,7 +70,7 @@ class Backup
   protected function saveLast()
   {
     $extractor = $this->getExtractor();
-    $date = Carbon::now(config('app.timezone'));
+    $date = Carbon::now($this->configuration['backup']['timezone']);
     switch ($this->configuration['backup']['location']) {
       case 'source':
         $extractor->saveLast($date);

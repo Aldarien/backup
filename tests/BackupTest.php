@@ -36,7 +36,8 @@ class BackupTest extends TestCase
         ]
       ],
       "backup" => [
-        "location" => "source"
+        "location" => "source",
+        "timezone" => "America/Santiago"
       ]
     ];
     $this->addTestData();
