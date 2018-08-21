@@ -2,7 +2,6 @@
 namespace App\Middleware;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class Backup
@@ -15,7 +14,7 @@ class Backup
   public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
   {
     // Check for last backup
-    $backup = new App\Service\Backup($this->settings);
+    $backup = new \App\Service\Backup($this->settings);
     if ($backup->hasBackup()) {
       $backup->extract();
       $backup->save();

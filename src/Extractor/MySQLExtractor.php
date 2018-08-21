@@ -81,6 +81,9 @@ class MySQLExtractor implements ExtractorInterface
   {
     $query = "SELECT `date` FROM backup ORDER BY DESC id LIMIT 1";
     $st = $this->connection->query($query, \PDO::FETCH_OBJ);
-    return $st->fetch()->date;
+    if ($st !== false) {
+      return $st->fetch()->date;
+    }
+    return false;
   }
 }

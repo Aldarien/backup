@@ -75,4 +75,19 @@ class BackupTest extends TestCase
     $response = $this->backup->save();
     $this->assertNull($response);
   }
+  public function testMiddleware()
+  {
+    $app = $this->createMock("\\Slim\\App");
+    $container = $this->createMock("\\Slim\\Container");
+    $app->method('getContainer')->willReturn($container);
+    $container->method('get')->with('settings')->willReturn(["backup" => $this->configuration]);
+    $req = $this->createMock("\\Psr\\Http\\Message\\ServerRequestInterface");
+    $res = $this->createMock("\\Psr\\Http\\Message\\ResponseInterface");
+    $next = function($req, $res) {
+      return true;
+    };
+
+    $middleware = new \App\Middleware\Backup($app);
+    $middleware->__invoke($req, $res, $next);
+  }
 }
