@@ -68,8 +68,11 @@ class MySQLExtractor implements ExtractorInterface
   }
   public function createBackup()
   {
-    $query = "CREATE TABLE IF NOT EXISTS `backup` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY, `date` DATETIME)";
-    $this->connection->query($query);
+    $query = "CREATE TABLE IF NOT EXISTS `backup` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `date` DATETIME)";
+    $r = $this->connection->query($query);
+    if (!$r) {
+      throw new \Exception('Backup not created.');
+    }
   }
   public function saveLast(\DateTime $date)
   {
@@ -79,10 +82,13 @@ class MySQLExtractor implements ExtractorInterface
   }
   public function checkLast()
   {
-    $query = "SELECT `date` FROM backup ORDER BY DESC id LIMIT 1";
+    $query = "SELECT `date` FROM `backup` ORDER BY `id` DESC LIMIT 1";
     $st = $this->connection->query($query, \PDO::FETCH_OBJ);
     if ($st !== false) {
-      return $st->fetch()->date;
+      $r = $st->fetch();
+      if ($r !== false) {
+        return $r->date;
+      }
     }
     return false;
   }
