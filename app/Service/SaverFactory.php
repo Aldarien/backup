@@ -13,7 +13,7 @@ class SaverFactory
   }
   protected function loadSavers()
   {
-    $dir = root() . '/src/Saver';
+    $dir = dirname(__DIR__) . '/../src/Saver';
     $files = glob($dir . '/*.php');
     foreach ($files as $file) {
       $info = pathinfo($file);

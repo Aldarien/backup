@@ -15,7 +15,7 @@ class Backup
   {
     // Check for last backup
     $backup = new \App\Service\Backup($this->settings);
-    if ($backup->hasBackup()) {
+    if (!$backup->hasBackup()) {
       $backup->extract();
       $backup->save();
     }

@@ -2,6 +2,7 @@
 namespace App\Service;
 
 use Carbon\Carbon;
+use Carbon\CarbonInterval;
 
 class Backup
 {
@@ -47,14 +48,19 @@ class Backup
   }
   protected function checkFrecuency($last)
   {
+    if (!$last) {
+      return false;
+    }
     $last = Carbon::parse($last, $this->configuration['backup']['timezone']);
-    return false;
+    $now = Carbon::now($this->configuration['backup']['timezone']);
+    $dif = CarbonInterval::instance($now->diff($last));
+    $interval = CarbonInterval::instance(CarbonInterval::createFromDateString($this->configuration['backup']['frecuency']['value'] . ' ' . $this->configuration['backup']['frecuency']['unit']));
+    return (CarbonInterval::compareDateIntervals($dif, $interval) <= 0);
   }
   public function extract()
   {
     $extractor = $this->getExtractor();
     $this->data = $extractor->extract()->getData();
-    $this->saveLast();
   }
   protected function getExtractor()
   {
@@ -69,10 +75,10 @@ class Backup
   }
   protected function saveLast()
   {
-    $extractor = $this->getExtractor();
     $date = Carbon::now($this->configuration['backup']['timezone']);
     switch ($this->configuration['backup']['location']) {
       case 'source':
+        $extractor = $this->getExtractor();
         $extractor->saveLast($date);
         break;
       case 'file':
@@ -82,6 +88,7 @@ class Backup
   }
   public function save()
   {
+    $this->saveLast();
     $factory = new SaverFactory();
     if (isset($this->configuration['output']['files'])) {
       $cfg = $this->configuration['output']['files'];
